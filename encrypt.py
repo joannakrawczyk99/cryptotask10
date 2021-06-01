@@ -18,9 +18,9 @@ def on_click():
 
     load_image.thumbnail(display_size, Image.ANTIALIAS)
 
-    np_mage = np.asarray(load_image)  # loading image as numpy array for efficient computation
-    np_mage = Image.fromarray(np.uint8(np_mage))
-    render = ImageTk.PhotoImage(np_mage)
+    np_image = np.asarray(load_image)  # loading image as numpy array for efficient computation
+    np_image = Image.fromarray(np.uint8(np_image))
+    render = ImageTk.PhotoImage(np_image)
     img = Label(app, image=render)
     img.image = render
     img.place(x=20, y=50)
@@ -30,11 +30,10 @@ def encrypt():
     global file_opened
 
     data = txt.get(1.0, "end-1c")
-    # load the image
 
-    img = cv2.imread(file_opened)
+    image = cv2.imread(file_opened)  # loading picture
     data = [format(ord(i), '08b') for i in data]  # represented in ascii
-    _, width, _ = img.shape
+    _, width, _ = image.shape
 
     PixReq = len(data) * 3  # encoding image
 
@@ -48,24 +47,24 @@ def encrypt():
             char = data[charCount]
             charCount += 1
             for index_k, k in enumerate(char):
-                if ((k == '1' and img[i][count][index_k % 3] % 2 == 0) or (
-                        k == '0' and img[i][count][index_k % 3] % 2 == 1)):
-                    img[i][count][index_k % 3] -= 1
+                if ((k == '1' and image[i][count][index_k % 3] % 2 == 0) or (
+                        k == '0' and image[i][count][index_k % 3] % 2 == 1)):
+                    image[i][count][index_k % 3] -= 1
                 if (index_k % 3 == 2):
                     count += 1
                 if (index_k == 7):
-                    if (charCount * 3 < PixReq and img[i][count][2] % 2 == 1):
-                        img[i][count][2] -= 1
-                    if (charCount * 3 >= PixReq and img[i][count][2] % 2 == 0):
-                        img[i][count][2] -= 1
+                    if (charCount * 3 < PixReq and image[i][count][2] % 2 == 1):
+                        image[i][count][2] -= 1
+                    if (charCount * 3 >= PixReq and image[i][count][2] % 2 == 0):
+                        image[i][count][2] -= 1
                     count += 1
         count = 0
 
-    cv2.imwrite("C:/Users/Aśka/PycharmProjects/encrypted_image.png", img)  # save encrypted image into a file
+    cv2.imwrite("C:/Users/Aśka/PycharmProjects/encrypted_image.png", image)  # save encrypted image into a file
 
-    success_label = Label(app, text="Encryption Successful!",
-                          bg='pink', font=("Times New Roman", 20))
-    success_label.place(x=160, y=300)
+    message = Label(app, text="Successful!",
+                          bg='pink', font=("Times New Roman", 10))
+    message.place(x=160, y=300)
 
 
 app = Tk()  # defining tkinter object
