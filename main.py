@@ -1,15 +1,20 @@
 from PIL import Image
 
-def convertData(data):
+import key
+import monoalphabetic_encryption
+import monoalphabetic_decryption
+
+
+def convertData(img):
     """
     Converting encoding data into binary values using ascii characters.
     :param data: encoding data
     :return: binary values
     """
-    new_dataset = []
-    for i in data:
-        new_dataset.append(format(ord(i), '08b'))
-    return new_dataset
+    dataset = []
+    for i in img:
+        dataset.append(format(ord(i), '08b'))
+    return dataset
 
 def modifyPixel(pix, data):
     """
@@ -69,10 +74,26 @@ def putPixel(new_image, message_to_encode):
         else:
             x += 1
 
-def encode():
+
+def encode(encryption=None):
     """
     Encoding data into an image.
     """
+
+    key_to_encrypt = {'a': 'q', 'b': 'v', 'c': 'x', 'd': 'z', 'e': 'y', 'f': 'w', 'g': 'u', 'h': 't', 'i': 's',
+                      'j': 'r',
+                      'k': 'p', 'l': 'o', 'm': 'n', 'n': 'm', 'o': 'l', 'p': 'k', 'r': 'j', 's': 'i', 't': 'h',
+                      'u': 'g', 'w': 'f',
+                      'y': 'e', 'z': 'd', 'x': 'c', 'v': 'b', 'q': 'a',
+                      'A': 'Q', 'B': 'V', 'C': 'X', 'D': 'Z', 'E': 'Y', 'F': 'W', 'G': 'U', 'H': 'T', 'I': 'S',
+                      'J': 'R', 'K': 'P',
+                      'L': 'O', 'M': 'N', 'N': 'M', 'O': 'L', 'P': 'K', 'R': 'J', 'S': 'I', 'T': 'H', 'U': 'G',
+                      'W': 'F', 'Y': 'E',
+                      'Z': 'D', 'X': 'C', 'V': 'B', 'Q': 'S',
+                      '1': '5', '2': '9', '3': '8', '4': '7', '5': '6', '6': '4', '7': '3', '8': '2', '9': '1',
+                      '.': ',', ',': '.', ':': ';', ';': ':', '?': '!', '!': '?', '-': '_', '_': '-', '(': ')',
+                      ')': '(',
+                      '%': '$', '$': '%', ' ': '&', '&': ' ', '+': '*', '*': '+'}
     entered_image = input("Image name with extension: ")
     img = Image.open(entered_image, 'r')
 
@@ -80,17 +101,39 @@ def encode():
     if (len(message) == 0):
         raise ValueError('Empty message!')
 
+    e1 = monoalphabetic_encryption.Encryption(key_to_encrypt, message)
+    encrypted_message = e1.encrypt()
+
     new_image = img.copy()
-    putPixel(new_image, message)
+    putPixel(new_image, encrypted_message)
 
     new_image_name = input("New image name with extension: ")
     new_image.save(new_image_name, str(new_image_name.split(".")[1].upper()))
 
-def decode():
+def decode(decryption=None):
     """
     Decoding data from the image.
     :return: decoded message
     """
+
+    key_to_encrypt = {'a': 'q', 'b': 'v', 'c': 'x', 'd': 'z', 'e': 'y', 'f': 'w', 'g': 'u', 'h': 't', 'i': 's',
+                      'j': 'r',
+                      'k': 'p', 'l': 'o', 'm': 'n', 'n': 'm', 'o': 'l', 'p': 'k', 'r': 'j', 's': 'i', 't': 'h',
+                      'u': 'g', 'w': 'f',
+                      'y': 'e', 'z': 'd', 'x': 'c', 'v': 'b', 'q': 'a',
+                      'A': 'Q', 'B': 'V', 'C': 'X', 'D': 'Z', 'E': 'Y', 'F': 'W', 'G': 'U', 'H': 'T', 'I': 'S',
+                      'J': 'R', 'K': 'P',
+                      'L': 'O', 'M': 'N', 'N': 'M', 'O': 'L', 'P': 'K', 'R': 'J', 'S': 'I', 'T': 'H', 'U': 'G',
+                      'W': 'F', 'Y': 'E',
+                      'Z': 'D', 'X': 'C', 'V': 'B', 'Q': 'S',
+                      '1': '5', '2': '9', '3': '8', '4': '7', '5': '6', '6': '4', '7': '3', '8': '2', '9': '1',
+                      '.': ',', ',': '.', ':': ';', ';': ':', '?': '!', '!': '?', '-': '_', '_': '-', '(': ')',
+                      ')': '(',
+                      '%': '$', '$': '%', ' ': '&', '&': ' ', '+': '*', '*': '+'}
+
+    k1 = key.Key(key_to_encrypt)
+    reversed_key = k1.createReverseKey()
+
     entered_image = input("Image name with extension: ")
     img = Image.open(entered_image, 'r')
 
@@ -111,8 +154,10 @@ def decode():
                 binary += '1'
 
         decoded_message += chr(int(binary, 2))
+        d1 = monoalphabetic_decryption.Decryption(reversed_key, decoded_message)
+        message = d1.decrypt()
         if (pixels[-1] % 2 != 0):
-            return decoded_message
+            return message
 
 def main():
     a = int(input(":: What do you want to do? ::\n"
