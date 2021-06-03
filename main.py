@@ -1,0 +1,128 @@
+from PIL import Image
+
+def convertData(data):
+    """
+    Converting encoding data into binary values using ascii characters.
+    :param data: encoding data
+    :return: binary values
+    """
+    new_dataset = []
+    for i in data:
+        new_dataset.append(format(ord(i), '08b'))
+    return new_dataset
+
+def modifyPixel(pix, data):
+    """
+    Extrating pixels and modyfing them.
+    :param pix: pixels
+    :param data: 8-bit binary data
+    """
+    datalist = convertData(data)
+    lendata = len(datalist)
+    imdata = iter(pix)
+
+    for i in range(lendata):
+        pix = [value for value in imdata.__next__()[:3] +
+               imdata.__next__()[:3] +
+               imdata.__next__()[:3]]
+
+        for j in range(0, 8):
+            if (datalist[i][j] == '0' and pix[j] % 2 != 0):
+                pix[j] -= 1
+
+            elif (datalist[i][j] == '1' and pix[j] % 2 == 0):
+                if (pix[j] != 0):
+                    pix[j] -= 1
+                else:
+                    pix[j] += 1
+
+        if (i == lendata - 1):
+            if (pix[-1] % 2 == 0):
+                if (pix[-1] != 0):
+                    pix[-1] -= 1
+                else:
+                    pix[-1] += 1
+
+        else:
+            if (pix[-1] % 2 != 0):
+                pix[-1] -= 1
+
+        pix = tuple(pix)
+        yield pix[0:3]
+        yield pix[3:6]
+        yield pix[6:9]
+
+
+def putPixel(new_image, message_to_encode):
+    """
+    Putting modified pixels into the new image.
+    :param new_image: new image
+    :param message_to_encode: message that will be encoded
+    """
+    w = new_image.size[0]
+    (x, y) = (0, 0)
+    for pix in modifyPixel(new_image.getdata(), message_to_encode):
+        new_image.putpixel((x, y), pix)
+        if (x == w - 1):
+            x = 0
+            y += 1
+        else:
+            x += 1
+
+def encode():
+    """
+    Encoding data into an image.
+    """
+    entered_image = input("Image name with extension: ")
+    img = Image.open(entered_image, 'r')
+
+    message = input("Message that you want to be encoded: ")
+    if (len(message) == 0):
+        raise ValueError('Empty message!')
+
+    new_image = img.copy()
+    putPixel(new_image, message)
+
+    new_image_name = input("New image name with extension: ")
+    new_image.save(new_image_name, str(new_image_name.split(".")[1].upper()))
+
+def decode():
+    """
+    Decoding data from the image.
+    :return: decoded message
+    """
+    entered_image = input("Image name with extension: ")
+    img = Image.open(entered_image, 'r')
+
+    decoded_message = ''
+    data_from_image = iter(img.getdata())
+
+    while (True):
+        pixels = [value for value in data_from_image.__next__()[:3] +
+                  data_from_image.__next__()[:3] +
+                  data_from_image.__next__()[:3]]
+
+        binary = ''
+
+        for i in pixels[:8]:
+            if (i % 2 == 0):
+                binary += '0'
+            else:
+                binary += '1'
+
+        decoded_message += chr(int(binary, 2))
+        if (pixels[-1] % 2 != 0):
+            return decoded_message
+
+def main():
+    a = int(input(":: What do you want to do? ::\n"
+                  "1. Encode\n2. Decode\n"))
+    if (a == 1):
+        encode()
+    elif (a == 2):
+        print("Decoded message:  " + decode())
+    else:
+        raise Exception("Wrong input! :(")
+
+if __name__ == '__main__':
+    main()
