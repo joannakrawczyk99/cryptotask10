@@ -160,7 +160,7 @@ def decode(decryption=None):
             return message
 
 def main():
-    a = int(input(":: What do you want to do? ::\n"
+    a = int(input("What do you want to do?\n"
                   "1. Encode\n2. Decode\n"))
     if (a == 1):
         encode()
